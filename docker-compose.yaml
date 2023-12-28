@@ -3,23 +3,24 @@ version: '3'
 services:
   laravel-docker:
     container_name: laravel-sso
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'php artisan serve --host=0.0.0.0'
     volumes:
-      - ./laravel-sso:/var/www/html
+      - .:/app
     ports:
-      - 9128:80
-
-  mysql-laravel:
-    image: mysql:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: sso_auth
+      - 9128:8000
+  
+  laravel-react:
+    container_name: react-laravel
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'npm run dev'
+    volumes:
+      - .:/app
     ports:
-      - 3318:3306
-
-  phpmyadmin-laravel:
-    image: phpmyadmin:latest
-    ports:
-      - 9030:80
-    environment:
-      - PMA_ARBITRARY=1
+      - 5173:5173
+    depends_on:
+      - laravel-docker

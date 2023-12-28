@@ -1,27 +1,22 @@
-FROM php:8.1.0-apache
-WORKDIR /var/www/html
+FROM php:8.2.14-fpm-alpine
 
-# Mod Rewrite
-RUN a2enmod rewrite
-
-# Linux Library
-Run apt-get update -y && apt-get install -y \
-    libicu-dev \
-    libmariadb \
-    unzip zip \
-    zlib1g-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libpng-dev
-
-# Composer
+# Install PHP With Extension & Composer
+RUN docker-php-ext-install pdo pdo_mysql
+RUN curl -sS https://getcomposer.org/installer​ | php -- \
+     --install-dir=/usr/local/bin --filename=composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# PHP Ext
-RUN docker-php-ext-install gettext intl pdo_mysql gd
+WORKDIR /app
+COPY . .
 
-RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd
+# Install Dependencies & Setup Laravel
+RUN composer install
+RUN cp .env.example .env
+RUN php artisan key:generate
+RUN php artisan migrate
+RUN php artisan passport:install --force
 
+# Install Node JS
+RUN apk add --update nodejs npm
+RUN npm rebuild node-sass
+RUN npm install
