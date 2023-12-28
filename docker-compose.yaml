@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  laravel-docker:
+    container_name: laravel-sso
+    build: .
+    volumes:
+      - ./laravel-sso:/var/www/html
+    ports:
+      - 9128:80
+
+  mysql-laravel:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sso_auth
+    ports:
+      - 3318:3306
+
+  phpmyadmin-laravel:
+    image: phpmyadmin:latest
+    ports:
+      - 9030:80
+    environment:
+      - PMA_ARBITRARY=1
